@@ -2,6 +2,8 @@
 """
 Predict_from_video.py
 
+source ~/envs/cv/bin/activate
+
 Runs the full pipeline on a video:
   - Stage 1: detect pig + objects (single 'object' class), assign objects to left/right by vertical position (top=left, bottom=right).
   - Stage 2: crop pig, detect only "head".
@@ -16,8 +18,8 @@ Usage:
       --pigobj ../ANSC/ANSC_pig/models/yolo_pig_object/weights/best.pt \
       --head ../ANSC/ANSC_pig/models/yolo_headtail/weights/best.pt \
       --clf ../ANSC/ANSC_pig/models/interaction_cls/interaction_cls_model.pkl \
-      --outvid ../ANSC/detected/F003_pred.mp4 \
-      --outcsv ../ANSC/detected/F003_pred.csv
+      --outvid ../ANSC/detected/F003_pred_inhance_head.mp4 \
+      --outcsv ../ANSC/detected/F003_pred_inhance_head.csv
 """
 
 import os
@@ -47,6 +49,9 @@ DERIVED_FEATURES = [
     "pig_aspect","head_aspect","left_object_aspect","right_object_aspect",
 ]
 ALL_FEATURES = BASE_FEATURES + DERIVED_FEATURES
+
+# --- temporal smoothing store for head detection ---
+last_head = None  # (hcx, hcy, hw, hh, conf) from previous processed frame
 
 def euclid(ax, ay, bx, by):
     if any([v is None or np.isnan(v) for v in (ax, ay, bx, by)]):
@@ -181,6 +186,8 @@ def main():
     if not out.isOpened():
         raise RuntimeError(f"Cannot write to: {args.outvid}")
 
+    global last_head
+
     csv_writer = None
     if args.outcsv:
         csvf = open(args.outcsv, "w", newline="")
@@ -236,13 +243,24 @@ def main():
         # --- Stage 2: head on pig crop ---
         head_best = None
         if pig_best is not None:
-            # convert pig center/size back to xyxy to crop
-            pcx,pcy,pw,ph,_ = pig_best
-            x1 = max(0, int(pcx - pw/2)); y1 = max(0, int(pcy - ph/2))
-            x2 = min(W, int(pcx + pw/2)); y2 = min(H, int(pcy + ph/2))
+            # convert pig center/size back to xyxy, add padding for context
+            pcx, pcy, pw, ph, _ = pig_best
+            pad = int(0.25 * max(pw, ph))  # 25% margin helps with occlusions
+            x1 = max(0, int(pcx - pw/2) - pad)
+            y1 = max(0, int(pcy - ph/2) - pad)
+            x2 = min(W, int(pcx + pw/2) + pad)
+            y2 = min(H, int(pcy + ph/2) + pad)
             crop = frame[y1:y2, x1:x2]
             if crop.size > 0:
-                det2 = model_head.predict(source=crop, stream=False, classes=[head_id])[0]
+                det2 = model_head.predict(
+                    source=crop,
+                    stream=False,
+                    classes=[head_id],   # only heads
+                    conf=0.15,           # be permissive to catch occluded heads
+                    iou=0.60,            # allow close overlaps
+                    agnostic_nms=True,
+                    max_det=3
+                )[0]
                 if len(det2.boxes):
                     confs = det2.boxes.conf.tolist()
                     best_i = int(max(range(len(confs)), key=lambda i: confs[i]))
@@ -255,6 +273,56 @@ def main():
                     head_best = (hcx,hcy,hw,hh,float(confs[best_i]))
                     cv2.rectangle(frame, (HX1,HY1), (HX2,HY2), (0,255,0), 2)
                     cv2.putText(frame, "head", (HX1, HY1-5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 1)
+
+                # --- temporal smoothing / fallback for head box ---
+                alpha = 0.6  # EMA factor
+                if head_best is None and last_head is not None:
+                    # fallback to last head with decayed confidence
+                    hcx, hcy, hw, hh, conf = last_head
+                    head_best = (hcx, hcy, hw, hh, conf * 0.85)
+                elif head_best is not None and last_head is not None:
+                    # smooth with previous
+                    hcx, hcy, hw, hh, conf = head_best
+                    lhx, lhy, lw, lh, lc = last_head
+                    head_best = (
+                        alpha * hcx + (1 - alpha) * lhx,
+                        alpha * hcy + (1 - alpha) * lhy,
+                        alpha * hw  + (1 - alpha) * lw,
+                        alpha * hh  + (1 - alpha) * lh,
+                        max(conf, lc * 0.95)
+                    )
+                # update last_head
+                last_head = head_best
+
+        # --- optional proxy head estimation ---
+        # If still no head, approximate a proxy at pig edge facing closest object
+        if head_best is None and pig_best is not None:
+            pcx, pcy, pw, ph, _ = pig_best
+            left_cx, left_cy = obj_assign.get("left_object_cx", np.nan), obj_assign.get("left_object_cy", np.nan)
+            right_cx, right_cy = obj_assign.get("right_object_cx", np.nan), obj_assign.get("right_object_cy", np.nan)
+
+            def dist(ax, ay, bx, by):
+                if any(np.isnan(v) for v in (ax, ay, bx, by)): return 1e9
+                return math.hypot(ax - bx, ay - by)
+
+            dL = dist(pcx, pcy, left_cx, left_cy)
+            dR = dist(pcx, pcy, right_cx, right_cy)
+
+            if dL < dR and not np.isnan(left_cy):
+                # objects are assigned by vertical position; use top/bottom to decide
+                hcx, hcy = pcx, (pcy - ph/2) if left_cy < pcy else (pcy + ph/2)
+            elif not np.isnan(right_cy):
+                hcx, hcy = pcx, (pcy - ph/2) if right_cy < pcy else (pcy + ph/2)
+            else:
+                hcx, hcy = pcx, pcy
+
+            head_best = (hcx, hcy, pw * 0.2, ph * 0.2, 0.05)
+
+            # draw proxy head lightly
+            HX1 = int(head_best[0] - head_best[2] / 2); HY1 = int(head_best[1] - head_best[3] / 2)
+            HX2 = int(head_best[0] + head_best[2] / 2); HY2 = int(head_best[1] + head_best[3] / 2)
+            cv2.rectangle(frame, (HX1, HY1), (HX2, HY2), (0, 200, 0), 1)
+            cv2.putText(frame, "head~", (HX1, HY1 - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 200, 0), 1)
 
         # --- Build features & predict ---
         left_dict = {k: np.nan for k in obj_assign} ; right_dict = {k: np.nan for k in obj_assign}
