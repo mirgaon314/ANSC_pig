@@ -1,0 +1,42 @@
+{
+  "csv": "/Users/owen/Documents/College/Lab/ANSC/mark_frame/F003_per_frame.csv",
+  "label_counts": {
+    "not_interacting": 15437,
+    "interacting_right": 2290,
+    "interacting_left": 274
+  },
+  "features": [
+    "pig_cx",
+    "pig_cy",
+    "pig_w",
+    "pig_h",
+    "left_object_cx",
+    "left_object_cy",
+    "left_object_w",
+    "left_object_h",
+    "right_object_cx",
+    "right_object_cy",
+    "right_object_w",
+    "right_object_h",
+    "head_cx",
+    "head_cy",
+    "head_w",
+    "head_h",
+    "dist_pig_to_left",
+    "dist_pig_to_right",
+    "dist_head_to_left",
+    "dist_head_to_right",
+    "dx_head_left",
+    "dy_head_left",
+    "dx_head_right",
+    "dy_head_right",
+    "dx_pig_left",
+    "dy_pig_left",
+    "dx_pig_right",
+    "dy_pig_right",
+    "pig_aspect",
+    "head_aspect",
+    "left_object_aspect",
+    "right_object_aspect"
+  ]
+}

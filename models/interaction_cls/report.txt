@@ -1,0 +1,24 @@
+Label counts:
+{
+  "not_interacting": 15437,
+  "interacting_right": 2290,
+  "interacting_left": 274
+}
+
+Classification report:
+                   precision    recall  f1-score   support
+
+ interacting_left      1.000     0.927     0.962        55
+interacting_right      0.996     0.991     0.993       458
+  not_interacting      0.997     0.999     0.998      3088
+
+         accuracy                          0.997      3601
+        macro avg      0.998     0.973     0.985      3601
+     weighted avg      0.997     0.997     0.997      3601
+
+
+Confusion matrix (rows=true, cols=pred):
+                   not_interacting  interacting_left  interacting_right
+not_interacting               3086                 0                  2
+interacting_left                 4                51                  0
+interacting_right                4                 0                454
