@@ -374,13 +374,25 @@ def make_per_frame_csv(input_csv, output_csv, fps=60, overlap="concat",
 # make_per_frame_csv("../ANSC/mark/C003.csv", "../ANSC/mark/C003_per_frame.csv", fps=60)
 
 # 2) Convert and also append coords by running detection on a video
-make_per_frame_csv(
-    input_csv = "../ANSC/mark/F003.csv",
-    output_csv = "../ANSC/mark_frame/F003_per_frame.csv",
-    fps=60,
-    video_path = "../ANSC/rough/F003.mp4",
-    model_pig_obj_path = "/Users/owen/runs/detect/yolo11n_finetune_custom/weights/best.pt",
-    model_head_path    = "/Users/owen/runs/detect/yolo_headtail/weights/best.pt",
-    class_map=("pig","object","head"),  # adjust if your model names differ
-    imgsz=640, conf=0.25, iou=0.7, device="mps"  # set device to GPU index if available
-)
+# Set just the recording name (e.g., "B001") and paths will be constructed automatically
+from pathlib import Path
+
+NAMES = ["FB001","FB002","FB003","FB004","FB005"]          # <-- change this only
+BASE = Path("../ANSC") # base folder
+
+
+for NAME in NAMES:
+    input_csv  = BASE / "mark" / f"{NAME}.csv"
+    output_csv = BASE / "mark_frame" / f"{NAME}_per_frame.csv"
+    video_path = BASE / "rough" / f"{NAME}.mp4"
+
+    make_per_frame_csv(
+        input_csv = str(input_csv),
+        output_csv = str(output_csv),
+        fps = 60,
+        video_path = str(video_path),
+        model_pig_obj_path = "/Users/owen/runs/detect/yolo11n_finetune_custom/weights/best.pt",
+        model_head_path    = "/Users/owen/runs/detect/yolo_headtail/weights/best.pt",
+        class_map=("pig","object","head"),  # adjust if your model names differ
+        imgsz=640, conf=0.25, iou=0.7, device="mps"  # set device to GPU index if available
+    )

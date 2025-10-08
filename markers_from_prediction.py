@@ -7,7 +7,7 @@ from typing import Optional, Dict, Tuple
 # Bridge small gaps between consecutive segments of the SAME side (seconds)
 GAP_SEC = 0.25
 # Drop segments shorter than this duration after merging (seconds)
-MIN_DUR_SEC = 0.10
+MIN_DUR_SEC = 0.05
 # Force trial start and end markers to fixed bounds instead of using first/last interaction
 FORCE_START_AT_ZERO = True
 FORCE_END_AT_VIDEO_DURATION = True
@@ -226,8 +226,8 @@ def build_marker_table_from_prediction(pred_csv: str, out_csv: str, trial_name: 
     return markers
 
 if __name__ == "__main__":
-    PRED_PATH = "../ANSC/detected/F003_pred.csv"   # change to your file
-    OUT_PATH = "../ANSC/detected/F003_pred_markers_60fps.csv"   # desired output filename
+    PRED_PATH = "../ANSC/detected/F003_pred_new.csv"   # change to your file
+    OUT_PATH = "../ANSC/detected/F003_pred_markers_60fps_new.csv"   # desired output filename
     TRIAL_NAME = "F003"                        # label in start/end markers
     FPS = 60
     markers = build_marker_table_from_prediction(PRED_PATH, OUT_PATH, TRIAL_NAME, FPS)
