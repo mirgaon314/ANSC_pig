@@ -239,12 +239,12 @@ def build_feature_row(pig_box, head_box, left_obj, right_obj):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--video", default="../ANSC/5min/Archive/F003_5min.mp4")
+    ap.add_argument("--video", default="../ANSC/5min/Archive/B004_5min.mp4")
     ap.add_argument("--pigobj", default="../ANSC/ANSC_pig/models/yolo_pig_object/weights/best.pt", help="YOLO weights for pig+object")
     ap.add_argument("--head", default="../ANSC/ANSC_pig/models/yolo_headtail/weights/best.pt", help="YOLO weights for head/tail model")
-    ap.add_argument("--outvid", default="../ANSC/detected/F003_pred_new.mp4", help="output annotated mp4")
-    ap.add_argument("--outcsv", default="../ANSC/detected/F003_pred_new.csv", help="optional per-frame predictions CSV")
-    ap.add_argument("--outmarkers", default="../ANSC/detected/F003_pred_markers_60fps_new.csv", help="optional markers CSV (start/stop per interaction)")
+    ap.add_argument("--outvid", default="../ANSC/detected/B004_pred_new.mp4", help="output annotated mp4")
+    ap.add_argument("--outcsv", default="../ANSC/detected/B004_pred_new.csv", help="optional per-frame predictions CSV")
+    ap.add_argument("--outmarkers", default="../ANSC/detected/B004_pred_markers_60fps_new.csv", help="optional markers CSV (start/stop per interaction)")
     ap.add_argument("--trial", default="F003", help="trial name to include in markers")
     ap.add_argument("--mm-ckpt", default="../ANSC/ANSC_pig/models/cls_runs_mm/mm_fusion_best.pt", help="path to mm_fusion_best.pt")
     ap.add_argument("--imgsz", type=int, default=224, help="inference image size for fusion model")
