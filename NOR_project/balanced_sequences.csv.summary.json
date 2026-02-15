@@ -1,0 +1,21 @@
+{
+  "num_samples": 11232,
+  "num_positive": 5616,
+  "num_negative": 5616,
+  "num_transition_on_positive": 15,
+  "missing_image_samples": 0,
+  "prev_positive_hist": {
+    "2": 5610,
+    "0": 5601,
+    "1": 21
+  },
+  "next_positive_hist": {
+    "2": 5615,
+    "0": 5593,
+    "1": 24
+  },
+  "input_csv": "B004_per_frame_with_crops.csv",
+  "output_csv": "balanced_sequences.csv",
+  "sequence_length": 5,
+  "balance_strategy": "downsample"
+}

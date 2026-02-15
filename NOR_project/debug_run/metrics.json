@@ -1,0 +1,47 @@
+[
+  {
+    "epoch": 1,
+    "phase": "train",
+    "loss": 0.12289395928382874,
+    "penalty": 0.0025406628847122192,
+    "accuracy": 0.5,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "balanced_accuracy": 0.5,
+    "tp": 0,
+    "tn": 1,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "epoch": 1,
+    "phase": "val",
+    "loss": 0.1273982673883438,
+    "penalty": 0.0,
+    "accuracy": 0.0,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "balanced_accuracy": 0.0,
+    "tp": 0,
+    "tn": 0,
+    "fp": 0,
+    "fn": 2
+  },
+  {
+    "epoch": 1,
+    "phase": "test",
+    "loss": 0.12736991047859192,
+    "penalty": 0.00014901906251907349,
+    "accuracy": 0.0,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "balanced_accuracy": 0.0,
+    "tp": 0,
+    "tn": 0,
+    "fp": 0,
+    "fn": 2
+  }
+]

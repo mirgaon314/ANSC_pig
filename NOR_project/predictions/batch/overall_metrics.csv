@@ -1,0 +1,2 @@
+subject,num_frames,num_labeled,accuracy,precision,recall,f1,balanced_accuracy,tp,tn,fp,fn,roc_auc,pr_auc
+B004,18001,18001,0.3122048775068052,0.0,0.0,0.0,0.5,0.0,5620.0,0.0,12381.0,0.5986829492210686,0.7852888235413938

@@ -1,0 +1,9 @@
+# number of classes
+nc: 1
+
+# list of class names in the same order as Label-Studio’s class IDs
+names: ['head']
+
+# paths (can be relative or absolute)
+train: ./images
+val:   ./images 
